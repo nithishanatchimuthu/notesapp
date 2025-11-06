@@ -26,8 +26,28 @@ const addNote = (text) => {
     body: JSON.stringify({ text }),
   })
     .then((res) => res.json())
-    .then((newNote) => setNotes([...notes, newNote])
-  );
+    .then((newNote) => setNotes((prevNotes) => [...prevNotes, newNote]))
+
+};
+
+
+
+
+const handleUpdateNote = (id, newText) => {
+  fetch(`http://localhost:5000/notes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: newText }),
+  })
+    .then((res) => res.json())
+    .then((updatedNote) => {
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note.id === Number(id) ? updatedNote : note
+        )
+      );
+    })
+    .catch((err) => console.error("Error updating note:", err));
 };
 
 const deleteNote = (id) => {
@@ -40,13 +60,17 @@ const deleteNote = (id) => {
   <div className='container'>
     <Header/>
     <Search handleSearchNote={setSearchText}/>
-   
-    < NotesList 
-    notes={notes.filter((note)=>note.text.toLowerCase().includes(searchText))}
-    handleAddNote={addNote}
-     handleDeleteNote={deleteNote}
-    />
-   
+
+
+   <NotesList
+  notes={notes.filter((note) =>
+    note.text.toLowerCase().includes(searchText.toLowerCase())
+  )}
+  handleAddNote={addNote}
+  handleDeleteNote={deleteNote}
+  handleUpdateNote={handleUpdateNote}
+/>
+
   </div>
   );
  };

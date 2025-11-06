@@ -55,6 +55,29 @@ app.post("/notes", async (req, res) => {
 
 });
 
+
+app.put("/notes/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { text } = req.body;
+
+    if (!text) return res.status(400).json({ message: "Text is required" });
+
+    const result = await pool.query(
+      "UPDATE notes SET text = $1 WHERE id = $2 RETURNING *",
+      [text, id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "Note not found" });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating note:", err);
+    res.status(500).json({ message: "Error updating note" });
+  }
+});
+
 app.delete("/notes/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -73,7 +96,6 @@ app.delete("/notes/:id", async (req, res) => {
 
 
 app.listen(5000, () => {
+  console.log("Server running on localhost:5000");
+});
 
-  console.log('Server running on localhost:5000');
-}
-);
